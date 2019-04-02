@@ -4,6 +4,7 @@
   when:
     - inventory_hostname == groups[mds_group_name] | first
     - not rolling_update
+    - create_cephfs | default(False)
 
 - name: set_fact docker_exec_cmd
   set_fact:
