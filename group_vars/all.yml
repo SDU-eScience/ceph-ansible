@@ -347,7 +347,7 @@ rgw_multisite: false
 ceph_conf_overrides:
   global:
     mon_target_pg_per_osd: 100
-    osd_pool_default_pg_autoscale_mode: "on"
+    osd_pool_default_pg_autoscale_mode: "warn"
 
 
 
