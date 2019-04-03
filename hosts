@@ -3,8 +3,8 @@ ceph-mon-01 monitor_address=172.100.3.1
 ceph-mon-02 monitor_address=172.100.3.2
 ceph-mon-03 monitor_address=172.100.3.3
 
-[osds]
-ceph-osd-[01:14]
+#[osds]
+#ceph-osd-[01:14]
 
 [mdss]
 ceph-mon-[01:03]
