@@ -1,0 +1,9 @@
+- name: install ceph
+  hosts: osds
+  gather_facts: false
+  become: true
+
+  tasks:
+    - package:
+        name: ceph
+        state: present

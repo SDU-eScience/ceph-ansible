@@ -7,3 +7,24 @@ ceph osd pool set cephfs_data target_size_ratio .5
 ceph osd pool set cephfs_data allow_ec_overwrites true
 ceph osd pool create cephfs_metadata 512 512 replicated
 ceph osd pool set cephfs_metadata target_size_ratio .05
+
+#ceph osd pool set cephfs_data pg_num 1024
+
+# ceph balancer
+ceph osd set-require-min-compat-client luminous
+ceph balancer mode upmap
+ceph balancer on
+
+# dashboard
+yum install ceph-mgr-dashboard
+ceph mgr module enable dashboard
+ceph dashboard create-self-signed-cert
+firewall-cmd --add-port=8443/tcp
+ceph dashboard ac-user-create user pass administrator
+
+
+
+# notes
+# to be able to remove a pool
+ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
+ceph osd pool delete testbench testbench --yes-i-really-really-mean-it
