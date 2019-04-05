@@ -19,7 +19,7 @@ ceph balancer on
 yum install ceph-mgr-dashboard
 ceph mgr module enable dashboard
 ceph dashboard create-self-signed-cert
-firewall-cmd --add-port=8443/tcp
+firewall-cmd --permanent --add-port=8443/tcp
 ceph dashboard ac-user-create user pass administrator
 
 
@@ -28,3 +28,11 @@ ceph dashboard ac-user-create user pass administrator
 # to be able to remove a pool
 ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 ceph osd pool delete testbench testbench --yes-i-really-really-mean-it
+
+
+# enable NAT 
+iptables -t nat -A POSTROUTING -o p3p1.99 -j MASQUERADE
+iptables -A FORWARD -i p3p1.99 -o p3p1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+iptables -A FORWARD -i p3p1 -o p3p1.99 -j ACCEPT
+sysctl -w net.ipv4.ip_forward=1

@@ -1,0 +1,12 @@
+---
+- name: Stop CEPH deamons for cluster "{{ cluster }}"
+  hosts: "{{ target }}"
+  gather_facts: false
+  become: true
+  tasks:
+    - command: "{{ item }}"
+      changed_when: false
+      loop:
+        - "systemctl stop ceph\\*.service"
+        - "systemctl stop ceph\\*.target"
+
