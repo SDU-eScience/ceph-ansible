@@ -1,0 +1,32 @@
+---
+- name: Check if ec profile already exists
+  command: "ceph --cluster {{ cluster }} osd erasure-code-profile get {{ item.name }}"
+  changed_when: false
+  failed_when: false
+  register: check_existing_ec
+
+- debug:
+    msg: "Skipping profile {{ item.name }} because already exist and force not set"
+  when:
+    - check_existing_ec.rc == 0
+    - not item.force | default(false)  
+
+- debug:
+    msg: "Updating profile {{ item.name }} as force is set"
+  when:
+    - check_existing_ec.rc == 0
+    - item.force | default(false)  
+
+- name: "Updating ec profile {{ item.name }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd erasure-code-profile set {{ item.name }} k={{ item.k }} m={{ item.m }} crush-failure-domain={{ item.crush_failure_domain }} plugin={{ item.plugin }} technique={{ item.technique }} --force"
+  changed_when: false
+  when:
+    - check_existing_ec.rc == 0
+    - item.force | default(false)  
+
+- name: "Create new ec profile {{ item.name }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd erasure-code-profile set {{ item.name }} k={{ item.k }} m={{ item.m }} crush-failure-domain={{ item.crush_failure_domain }} plugin={{ item.plugin }} technique={{ item.technique }}"
+  changed_when: false
+  when:
+    - check_existing_ec.rc != 0
+

@@ -179,7 +179,56 @@ mon_use_fqdn: false # if set to true, the MON name used will be the fqdn in the 
 ##########
 # CEPHFS #
 ##########
-create_cephfs: false
+osd_pool_default_size: 3
+osd_pool_default_min_size: 1
+osd_pool_default_pg_num: 128
+
+### DANGEROUS
+ceph_remove_pools:
+  - "test_42"
+  - "test_def"
+  - "test_ec"
+
+
+ceph_pools_replicated:
+  # - name: test_def
+  #   pgs: "{{ osd_pool_default_pg_num }}" 
+  #   size: "{{ osd_pool_default_size }}"
+  #   min_size: "{{ osd_pool_default_min_size }}"
+  - name: cephfs_metadata
+    pgs: 512
+    size: 4
+    min_size: 2
+    target_size_ratio: 0.05
+    applications:
+      - cephfs
+  - name: kube
+    pgs: 1024
+    size: 4
+    min_size: 2
+    target_size_ratio: 0.10
+    applications:
+      - rdb
+
+ceph_ec_profiles:
+  - name: ec_83h
+    k: 8
+    m: 3
+    plugin: jerasure
+    technique: reed_sol_van
+    crush_failure_domain: host
+
+ceph_pools_ec:
+  - name: cephfs_data
+    pgs: 1024
+    ec_profile: ec_83h
+    target_size_ratio: 0.5
+    applications:
+      - cephfs
+
+
+
+create_cephfs: true
 cephfs: cephfs # name of the ceph filesystem
 cephfs_data: cephfs_data # name of the data pool for a given filesystem
 cephfs_metadata: cephfs_metadata # name of the metadata pool for a given filesystem

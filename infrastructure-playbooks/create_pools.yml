@@ -1,0 +1,31 @@
+---
+- name: Create replicated pools
+  hosts: mons
+  become: true
+
+  tasks:
+    - include_tasks: create_replicated_pool.yml
+      loop: "{{ ceph_pools_replicated }}"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+- name: Create EC profiles
+  hosts: mons
+  become: true
+
+  tasks:
+    - include_tasks: create_ec_profile.yml
+      loop: "{{ ceph_ec_profiles }}"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+- name: Create EC pools
+  hosts: mons
+  become: true
+
+  tasks:
+    - include_tasks: create_ec_pool.yml
+      loop: "{{ ceph_pools_ec }}"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+

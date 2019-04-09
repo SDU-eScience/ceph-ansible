@@ -1,0 +1,59 @@
+---
+- name: Install required packages
+  hosts: mons
+  become: true
+
+  vars:
+    dash_packages:
+      - ceph-mgr-dashboard
+
+  tasks:
+    - package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ dash_packages }}"
+
+- name: Activate dashboard module
+  hosts: mons
+  become: true
+
+  tasks:
+    - command: "ceph mgr module enable dashboard"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+- name: Wait for dashboard
+  hosts: mons
+
+  tasks:
+    - command: "sleep 3"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+- name: Create self-signed certificate
+  hosts: mons
+  become: true
+
+  tasks:
+    - command: "ceph dashboard create-self-signed-cert"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+- name: Open firewall ports
+  hosts: mons
+  become: true
+
+  vars:
+    dash_ports:
+      - 8443/tcp
+
+  tasks:
+    - firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+        zone: public
+      loop: "{{ dash_ports }}"
+
+
+

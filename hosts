@@ -6,8 +6,8 @@ ceph-mon-03 monitor_address=172.26.3.3
 [mdss]
 ceph-mon-[01:03]
 
-[mgrs]
-ceph-mon-[01:03]
+#[mgrs]
+#ceph-mon-[01:03]
 
-[osds]
-ceph-osd-[01:14]
+#[osds]
+#ceph-osd-[01:14]

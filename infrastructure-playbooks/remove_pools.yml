@@ -1,0 +1,47 @@
+---
+# This playbook remove ceph pools
+- name: List pools
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - debug:
+        msg: "Pools to be deleted: {{ ceph_remove_pools }}"
+
+- name: confirm whether user really meant to remove the pools
+  hosts: localhost
+  gather_facts: false
+
+  vars_prompt:
+    - name: ireallymeanit
+      prompt: "Are you sure you want to remove the pools above?"
+      default: 'no'
+      private: no
+
+  tasks:
+  - name: exit playbook, if user did not mean to remove pools
+    fail:
+      msg: >
+        "Exiting remove_pools playbook: pools were NOT removed."
+    when: ireallymeanit != 'yes'
+
+- name: Delete pools
+  hosts: mons
+  become: true
+
+  tasks:
+    - name: Allow pool deletion
+      command: "ceph tell mon.\\* injectargs '--mon-allow-pool-delete=true'"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+    - name: remove pools
+      command: "ceph osd pool delete {{ item }} {{ item }} --yes-i-really-really-mean-it"
+      loop: "{{ ceph_remove_pools }}"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true
+
+    - name: Disallow pool deletion
+      command: "ceph tell mon.\\* injectargs '--mon-allow-pool-delete=false'"
+      delegate_to: "{{ groups[mon_group_name][0] }}"
+      run_once: true

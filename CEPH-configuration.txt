@@ -10,6 +10,10 @@ ceph osd pool set cephfs_metadata target_size_ratio .05
 
 #ceph osd pool set cephfs_data pg_num 1024
 
+# ceph k8s
+ceph --cluster ceph auth get-or-create client.kube mon 'allow r' osd 'allow rwx pool=kube'
+
+
 # ceph balancer
 ceph osd set-require-min-compat-client luminous
 ceph balancer mode upmap
@@ -30,9 +34,12 @@ ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 ceph osd pool delete testbench testbench --yes-i-really-really-mean-it
 
 
-# enable NAT 
+# enable NAT ## to delete the rule change -A with -D 
+# to list all rules -S 
+# -t NAT select the NAT table 
 iptables -t nat -A POSTROUTING -o p3p1.99 -j MASQUERADE
 iptables -A FORWARD -i p3p1.99 -o p3p1 -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
 iptables -A FORWARD -i p3p1 -o p3p1.99 -j ACCEPT
 sysctl -w net.ipv4.ip_forward=1
+

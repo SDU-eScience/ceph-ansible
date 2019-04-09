@@ -1,0 +1,41 @@
+---
+- name: "Check if pool {{ item.name }} already exists"
+  command: "ceph --cluster {{ cluster }} osd pool get {{ item.name }} pg_num"
+  changed_when: false
+  failed_when: false
+  register: check_existing_cephpool
+
+- name: "Create pool {{ item.name }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool create {{ item.name }} {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  changed_when: false
+  when:
+  - check_existing_cephpool.rc != 0
+
+- name: "Customize pool pgnum {{ item.name }}: {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} pg_num {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  changed_when: false
+  when:
+  - check_existing_cephpool.rc == 0
+
+- name: "Customize pool {{ item.name }} size: {{ item.size | default(osd_pool_default_size) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} size {{ item.size | default(osd_pool_default_size) }}"
+  changed_when: false
+
+- name: "Customize pool {{ item.name }} minsize: {{ item.min_size | default(osd_pool_default_min_size) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} min_size {{ item.min_size | default(osd_pool_default_min_size) }}"
+  changed_when: false
+
+- name: "Set pool {{ item.name }} target_ratio: {{ item.target_size_ratio | default(0) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} target_size_ratio {{ item.target_size_ratio }}"
+  changed_when: false
+  when:
+  - item.target_size_ratio is defined
+
+- name: "Set pool {{ item.name }} application: {{ app }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool application enable {{ item.name }} {{ app }}"
+  changed_when: false
+  loop: "{{ item.applications }}"
+  loop_control:
+    loop_var: app
+  when:
+  - item.applications is defined

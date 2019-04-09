@@ -1,0 +1,35 @@
+---
+- name: Check if pool already exists
+  command: "ceph --cluster {{ cluster }} osd pool get {{ item.name }} pg_num"
+  changed_when: false
+  delegate_to: "{{ groups[mon_group_name][0] }}"
+  run_once: true
+  register: check_existing_cephpool
+
+- name: "Create pool {{ item.name }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool create {{ item.name }} {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  changed_when: false
+  delegate_to: "{{ groups[mon_group_name][0] }}"
+  run_once: true
+  when:
+  - check_existing_cephpool.rc != 0
+
+- name: "Customize pool pgnum {{ item.name }}: {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} pg_num {{ item.pgs | default(osd_pool_default_pg_num) }}"
+  changed_when: false
+  delegate_to: "{{ groups[mon_group_name][0] }}"
+  run_once: true
+  when:
+  - check_existing_cephpool.rc == 0
+
+- name: "Customize pool size {{ item.name }}: {{ item.size | default(osd_pool_default_size) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} size {{ item.size | default(osd_pool_default_size) }}"
+  changed_when: false
+  delegate_to: "{{ groups[mon_group_name][0] }}"
+  run_once: true
+
+- name: "Customize pool minsize {{ item.name }}: {{ item.min_size | default(osd_pool_default_min_size) }}"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd pool set {{ item.name }} min_size {{ item.min_size | default(osd_pool_default_min_size) }}"
+  changed_when: false
+  delegate_to: "{{ groups[mon_group_name][0] }}"
+  run_once: true
