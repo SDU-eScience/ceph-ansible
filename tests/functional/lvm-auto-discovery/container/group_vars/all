@@ -6,7 +6,7 @@ docker: True
 
 containerized_deployment: True
 ceph_origin: repository
-ceph_repository: dev
+ceph_repository: community
 cluster: ceph
 public_network: "192.168.39.0/24"
 cluster_network: "192.168.40.0/24"
@@ -15,7 +15,6 @@ radosgw_interface: "{{ 'eth1' if ansible_distribution == 'CentOS' else 'ens6' }}
 journal_size: 100
 osd_objectstore: "bluestore"
 crush_device_class: test
-osd_scenario: lvm
 copy_admin_key: true
 osd_auto_discovery: true
 os_tuning_params:

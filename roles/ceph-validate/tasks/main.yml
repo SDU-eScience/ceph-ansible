@@ -61,6 +61,7 @@
   when:
     - osd_group_name in group_names
     - not osd_auto_discovery | default(False)
+    - devices|default([])|length > 0
 
 - name: include check_eth_mon.yml
   include_tasks: check_eth_mon.yml
@@ -96,3 +97,10 @@
   include_tasks: check_iscsi.yml
   when:
     - iscsi_gw_group_name in group_names
+
+- name: warn about radosgw_civetweb_num_threads option deprecation
+  debug:
+    msg: "WARNING: radosgw_civetweb_num_threads variable is deprecated. Please use radosgw_thread_pool_size instead"
+  when:
+    - radosgw_frontend_type == 'civetweb'
+    - radosgw_civetweb_num_threads is defined

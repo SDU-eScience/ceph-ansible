@@ -257,11 +257,6 @@
       - reboot_osd_node
       - remove_osd_mountpoints.failed is defined
 
-  - name: see if ceph-disk is installed
-    shell: "which ceph-disk"
-    failed_when: false
-    register: ceph_disk_present
-
   - name: wipe table on dm-crypt devices
     command: dmsetup wipe_table --force "{{ item }}"
     with_items: "{{ encrypted_ceph_partuuid.stdout_lines }}"
@@ -323,7 +318,7 @@
       CEPH_VOLUME_DEBUG: 1
     with_items: "{{ lvm_volumes }}"
     when:
-      - osd_scenario == "lvm"
+      - lvm_volumes | default([]) | length > 0
       - ceph_volume_present.rc == 0
         
   - name: resolve device link(s)
@@ -361,8 +356,7 @@
       CEPH_VOLUME_DEBUG: 1
     with_items: "{{ devices }}"
     when:
-      - devices is defined
-      - osd_scenario == "lvm"
+      - devices | default([]) | length > 0
       - ceph_volume_present.rc == 0
 
   - name: get ceph block partitions
@@ -494,6 +488,7 @@
       - librados2
       - libradosstriper1
       - librbd1
+      - python-ceph-argparse
       - python-cephfs
       - python-rados
       - python-rbd
