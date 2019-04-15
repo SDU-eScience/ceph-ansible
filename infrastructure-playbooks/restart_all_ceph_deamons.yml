@@ -1,20 +1,15 @@
 ---
-- name: Stop CEPH deamons for cluster "{{ cluster }}"
+- name: Restart all CEPH deamons for cluster "{{ cluster }}"
   hosts: "{{ target }}"
   gather_facts: false
   become: true
+  serial: 1 
+  
   tasks:
     - command: "{{ item }}"
       changed_when: false
       loop:
         - "systemctl stop ceph\\*.service"
         - "systemctl stop ceph\\*.target"
-
-- name: Start all CEPH deamons for cluster "{{ cluster }}"
-  hosts: "{{ target }}"
-  gather_facts: false
-  become: true
-  tasks:
-    - command: "systemctl start ceph.target"
-      changed_when: false
-
+        - "systemctl start ceph\\*.target"
+  
