@@ -19,6 +19,25 @@ ceph osd set-require-min-compat-client luminous
 ceph balancer mode upmap
 ceph balancer on
 
+# to pause the CEPH cluster
+ceph osd set noout
+ceph osd set nobackfill
+ceph osd set norecover
+ceph osd set norebalance
+ceph osd set nodown
+ceph osd set pause
+# the first 3 above 
+#Those flags should be totally sufficient to safely powerdown your cluster but you
+#could also set the following flags on top if you would like to pause your cluster completely
+
+ceph osd unset pause
+ceph osd unset nodown
+ceph osd unset norebalance
+ceph osd unset norecover
+ceph osd unset nobackfill
+ceph osd unset noout
+
+
 # dashboard
 yum install ceph-mgr-dashboard
 ceph mgr module enable dashboard
@@ -33,7 +52,14 @@ ceph dashboard ac-user-create user pass administrator
 ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 ceph osd pool delete testbench testbench --yes-i-really-really-mean-it
 
+# to mount a rbd with the kernel driver
+rbd map test3 -p escience --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id manager1 -m 172.26.3.1:6789
 
+# to mount a rbd with the rbd-ndb / nbd driver + librbd usersapce lib
+rbd-nbd map escience/test4 --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id manager1 -m 172.26.3.1:6789 [--device /dev/nbd4]
+
+
+###############################
 # enable NAT ## to delete the rule change -A with -D 
 # to list all rules -S 
 # -t NAT select the NAT table 
@@ -43,3 +69,58 @@ iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
 iptables -A FORWARD -i p3p1 -o p3p1.99 -j ACCEPT
 sysctl -w net.ipv4.ip_forward=1
 
+## configure docker registry
+* set dns name dockerregistry.cloud.sdu.docker
+* configure the regitry
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce-18.06.3.ce-3.el7
+yum install -y containerd.io
+systemctl enable docker
+systemctl start docker
+docker run -d -p 172.16.1.1:5000:5000 --name registry -v /mnt/docker_repo:/var/lib/registry --restart=unless-stopped registry:2
+
+############################
+## nginx
+############################
+events {
+    worker_connections 8192;
+}
+
+http {
+    upstream dockerregistry {
+        server dockerregistry.cloud.sdu.dk:80;
+    }
+
+    map $http_upgrade $connection_upgrade {
+        default Upgrade;
+        ''      close;
+    }
+
+    server {
+        listen 172.16.1.1:443 ssl http2;
+        server_name dockerregistry.cloud.sdu.dk;
+        ssl_certificate /etc/pki/tls/self.crt;
+        ssl_certificate_key /etc/pki/tls/self.key;
+
+        location / {
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://dockerregistry;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            # This allows the ability for the execute shell window to remain open for up to 15 minutes. Without this parameter, the default is 1 minute and will automatically close.
+            proxy_read_timeout 900s;
+            proxy_buffering off;
+        }
+    }
+
+    server {
+        listen 172.16.1.1:80;
+        server_name dockerregistry.cloud.sdu.dk;
+        return 301 https://$server_name$request_uri;
+        # Should be changed to 301 later
+    }
+}

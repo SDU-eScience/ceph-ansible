@@ -17,7 +17,7 @@ dummy:
 # will copy the admin key to the /etc/ceph/ directory
 #copy_admin_key: false
 
-#user_config: false
+user_config: true
 #test:
 #  name: "test"
 #  pg_num: "{{ osd_pool_default_pg_num }}"
@@ -56,4 +56,14 @@ dummy:
 #keys:
 #  - { name: client.test, caps: { mon: "allow r", osd: "allow class-read object_prefix rbd_children, allow rwx pool=test" },  mode: "{{ ceph_keyring_permissions }}" }
 #  - { name: client.test2, caps: { mon: "allow r", osd: "allow class-read object_prefix rbd_children, allow rwx pool=test2" },  mode: "{{ ceph_keyring_permissions }}" }
+
+pools: [ ]
+
+keys:
+  - name: client.manager1
+    key: "AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg=="
+    caps:
+      mon: "allow r"
+      osd: "allow rwx pool=escience,allow rwx pool=kube"
+    mode: "{{ ceph_keyring_permissions }}"
 
