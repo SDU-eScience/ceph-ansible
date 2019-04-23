@@ -1,12 +1,12 @@
 ---
 - name: Pause CEPH Cluster {{ cluster }} 
-  hosts: mons
+  hosts: mons[0]
   gather_facts: false
   become: true
   tasks:
     - command: "{{ item }}"
       changed_when: false
-      delegate_to: "{{ groups[mon_group_name][0] }}"
+      # delegate_to: "{{ groups[mon_group_name][0] }}"
       loop:
         - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd set noout"
         - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd set nobackfill"

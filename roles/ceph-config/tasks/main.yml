@@ -5,8 +5,6 @@
     - containerized_deployment|bool
 
 - name: config file operations related to OSDs
-  when:
-    - inventory_hostname in groups.get(osd_group_name, [])
   block:
   - name: count number of osds for lvm scenario
     set_fact:

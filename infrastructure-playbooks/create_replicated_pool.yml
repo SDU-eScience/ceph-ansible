@@ -39,3 +39,13 @@
     loop_var: app
   when:
   - item.applications is defined
+
+- name: "Init rbd pools"
+  command: "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} rdb init pool {{ item.name }}"
+  changed_when: false
+  loop: "{{ item.applications }}"
+  loop_control:
+    loop_var: app
+  when:
+  - item.applications is defined
+  - app == "rdb"

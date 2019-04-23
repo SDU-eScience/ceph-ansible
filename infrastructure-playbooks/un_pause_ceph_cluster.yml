@@ -1,0 +1,18 @@
+---
+- name: Un-Pause CEPH Cluster 
+  hosts: mons[0]
+  gather_facts: false
+  become: true
+  tasks:
+    - command: "{{ item }}"
+      changed_when: false
+      # delegate_to: "{{ groups[mon_group_name][0] }}"
+      loop:
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset pause"
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset nodown"
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset norebalance"
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset norecover"
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset nobackfill"
+        - "{{ hostvars[groups[mon_group_name][0]]['docker_exec_cmd'] | default('') }} ceph --cluster {{ cluster }} osd unset noout"
+
+

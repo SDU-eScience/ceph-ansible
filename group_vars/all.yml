@@ -10,9 +10,9 @@
 # Releases name to number dictionary #
 ######################################
 ceph_release_num:
-#  luminous: 12
-#  mimic: 13
- nautilus: 14
+  luminous: 12
+  mimic: 13
+  nautilus: 14
 #  dev: 99
 
 # Directory to fetch cluster fsid, keys etc...
@@ -43,7 +43,7 @@ mgr_group_name: mgrs
 # If configure_firewall is true, then ansible will try to configure the
 # appropriate firewalling rules so that Ceph daemons can communicate
 # with each others.
-configure_firewall: True
+configure_firewall: false
 
 # Open ports on corresponding nodes if firewall is installed on it
 #ceph_mon_firewall_zone: public
@@ -185,10 +185,10 @@ osd_pool_default_pg_num: 128
 
 ### DANGEROUS
 ceph_remove_pools:
-  - "kube"
-  - "escience"
-  - "test"
-  - "fast"
+  # - "kube"
+  # - "escience"
+  - "cephfs_data"
+  # - "cephfs_metadata"
 
 
 
@@ -198,21 +198,21 @@ ceph_pools_replicated:
   #   size: "{{ osd_pool_default_size }}"
   #   min_size: "{{ osd_pool_default_min_size }}"
   - name: cephfs_metadata
-    pgs: 256
+    pgs: 512
     size: 4
     min_size: 2
     target_size_ratio: 0.05
     applications:
       - cephfs
   - name: kube
-    pgs: 1024
+    pgs: 512
     size: 4
     min_size: 2
     target_size_ratio: 0.10
     applications:
       - rbd
   - name: escience
-    pgs: 2048
+    pgs: 512
     size: 4
     min_size: 2
     target_size_ratio: 0.10
@@ -231,9 +231,15 @@ ceph_pools_ec:
   - name: cephfs_data
     pgs: 1024
     ec_profile: ec_83h
-    target_size_ratio: 0.5
+    target_size_ratio: 0.4
     applications:
       - cephfs
+  - name: test_ec
+    pgs: 512
+    ec_profile: ec_83h
+    target_size_ratio: 0.2
+    applications:
+      - rados
 
 
 
@@ -406,8 +412,12 @@ ceph_conf_overrides:
   global:
     mon_target_pg_per_osd: 100
     osd_pool_default_pg_autoscale_mode: "warn"
+    ms_bind_prefer_ipv4: true
+    # ms_cluster_type: "async+rdma"
+    # ms_async_rdma_device_name: "mlx5_0,mlx5_1"
+    # ms_async_rdma_cm: "true"
 
-
+timeout_command: "timeout --foreground -s KILL 10s"
 
 #############
 # OS TUNING #
