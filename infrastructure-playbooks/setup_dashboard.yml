@@ -18,16 +18,14 @@
 
   tasks:
     - command: "sleep 3"
-      delegate_to: "{{ groups[mon_group_name][0] }}"
       run_once: true
 
 - name: Activate dashboard module
-  hosts: mons
+  hosts: mons[0]
   become: true
 
   tasks:
     - command: "ceph mgr module enable dashboard"
-      delegate_to: "{{ groups[mon_group_name][0] }}"
       run_once: true
 
 - name: Wait for dashboard
@@ -35,16 +33,14 @@
 
   tasks:
     - command: "sleep 3"
-      delegate_to: "{{ groups[mon_group_name][0] }}"
       run_once: true
 
 - name: Create self-signed certificate
-  hosts: mons
+  hosts: mons[0]
   become: true
 
   tasks:
     - command: "ceph dashboard create-self-signed-cert"
-      delegate_to: "{{ groups[mon_group_name][0] }}"
       run_once: true
 
 

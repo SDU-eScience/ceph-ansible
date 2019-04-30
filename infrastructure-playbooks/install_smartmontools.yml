@@ -1,0 +1,13 @@
+---
+- name: Install smartmontools
+  hosts:
+    - mons
+    - osds
+  become: true
+
+  tasks:
+    - name: install smartmontools
+      yum:
+        name: smartmontools
+        state: latest
+      

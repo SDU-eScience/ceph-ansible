@@ -69,6 +69,7 @@ centos_package_dependencies:
 #  - epel-release # we don't need external repos
   - python-setuptools
   - libselinux-python
+  - smartmontools
 
 #redhat_package_dependencies:
 #  - python-pycurl
