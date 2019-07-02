@@ -74,7 +74,6 @@ rbd-nbd map escience/test4 --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id m
 # -t NAT select the NAT table 
 iptables -t nat -A POSTROUTING -o p3p1.99 -j MASQUERADE
 iptables -A FORWARD -i p3p1.99 -o p3p1 -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
 iptables -A FORWARD -i p3p1 -o p3p1.99 -j ACCEPT
 sysctl -w net.ipv4.ip_forward=1
 
