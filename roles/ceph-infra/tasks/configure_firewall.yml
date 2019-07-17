@@ -7,14 +7,11 @@
   ignore_errors: true
   check_mode: no
   changed_when: false
-  tags:
-    - firewall
-  when:
-    - not containerized_deployment
+  tags: firewall
+  when: not containerized_deployment | bool
 
-- when:
-    - (firewalld_pkg_query.get('rc', 1) == 0
-      or is_atomic)
+- when: (firewalld_pkg_query.get('rc', 1) == 0
+      or is_atomic | bool)
   block:
   - name: start firewalld
     service:
@@ -36,8 +33,7 @@
     when:
       - mon_group_name is defined
       - mon_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open manager ports
     firewalld:
@@ -50,8 +46,7 @@
     when:
       - mgr_group_name is defined
       - mgr_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open osd ports
     firewalld:
@@ -67,8 +62,7 @@
     when:
       - osd_group_name is defined
       - osd_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open rgw ports
     firewalld:
@@ -81,8 +75,7 @@
     when:
       - rgw_group_name is defined
       - rgw_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open mds ports
     firewalld:
@@ -95,8 +88,7 @@
     when:
       - mds_group_name is defined
       - mds_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open nfs ports
     firewalld:
@@ -109,8 +101,7 @@
     when:
       - nfs_group_name is defined
       - nfs_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open nfs ports (portmapper)
     firewalld:
@@ -123,8 +114,7 @@
     when:
       - nfs_group_name is defined
       - nfs_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open rbdmirror ports
     firewalld:
@@ -137,8 +127,7 @@
     when:
       - rbdmirror_group_name is defined
       - rbdmirror_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open iscsi target ports
     firewalld:
@@ -151,8 +140,7 @@
     when:
       - iscsi_gw_group_name is defined
       - iscsi_gw_group_name in group_names
-    tags:
-      - firewall
+    tags: firewall
 
   - name: open iscsi api ports
     firewalld:
@@ -165,6 +153,89 @@
     when:
       - iscsi_gw_group_name is defined
       - iscsi_gw_group_name in group_names
+    tags: firewall
+
+  - name: open node_exporter port
+    firewalld:
+      port: "9100/tcp"
+      zone: "{{ ceph_dashboard_firewall_zone }}"
+      permanent: true
+      immediate: true
+      state: enabled
+    when: dashboard_enabled | bool
+
+  - block:
+      - name: open dashboard port
+        firewalld:
+          port: "{{ dashboard_port }}/tcp"
+          zone: "{{ ceph_dashboard_firewall_zone }}"
+          permanent: true
+          immediate: true
+          state: enabled
+
+      - name: open mgr/prometheus port
+        firewalld:
+          port: "9283/tcp"
+          zone: "{{ ceph_dashboard_firewall_zone }}"
+          permanent: true
+          immediate: true
+          state: enabled
+    when:
+      - dashboard_enabled | bool
+      - mgr_group_name is defined
+      - mgr_group_name in group_names
+
+  - block:
+      - name: open grafana port
+        firewalld:
+          port: "3000/tcp"
+          zone: "{{ ceph_dashboard_firewall_zone }}"
+          permanent: true
+          immediate: true
+          state: enabled
+
+      - name: open prometheus port
+        firewalld:
+          port: "9090/tcp"
+          zone: "{{ ceph_dashboard_firewall_zone }}"
+          permanent: true
+          immediate: true
+          state: enabled
+
+      - name: open alertmanager port
+        firewalld:
+          port: "9093/tcp"
+          zone: "{{ ceph_dashboard_firewall_zone }}"
+          permanent: true
+          immediate: true
+          state: enabled
+    when:
+      - dashboard_enabled | bool
+      - inventory_hostname in groups.get('grafana-server', [])
+
+  - name: open haproxy ports
+    firewalld:
+      port: "{{ haproxy_frontend_port | default(80) }}/tcp"
+      zone: "{{ ceph_rgwloadbalancer_firewall_zone }}"
+      source: "{{ public_network }}"
+      permanent: true
+      immediate: true
+      state: enabled
+    when:
+      - rgwloadbalancer_group_name is defined
+      - rgwloadbalancer_group_name in group_names
+    tags:
+      - firewall
+
+  - name: add rich rule for keepalived vrrp
+    firewalld:
+      rich_rule: 'rule protocol value="vrrp" accept'
+      permanent: true
+      immediate: true
+      state: enabled
+    when:
+      - rgwloadbalancer_group_name is defined
+      - rgwloadbalancer_group_name in group_names
     tags:
       - firewall
 

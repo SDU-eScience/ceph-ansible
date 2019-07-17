@@ -3,7 +3,6 @@
 
 - hosts:
   - mons
-  - agents
   - osds
   - mdss
   - rgws
@@ -13,6 +12,7 @@
   - iscsigws
   - iscsi-gws # for backward compatibility only!
   - mgrs
+  - grafana-server
 
   gather_facts: false
   become: True
@@ -28,8 +28,7 @@
     # pre-tasks for following import -
     - name: gather facts
       setup:
-      when:
-        - not delegate_facts_host | bool
+      when: not delegate_facts_host | bool
 
     - name: gather and delegate facts
       setup:
@@ -37,21 +36,18 @@
       delegate_facts: True
       with_items: "{{ groups['all'] }}"
       run_once: true
-      when:
-        - delegate_facts_host | bool
+      when: delegate_facts_host | bool
 
     - name: check if it is atomic host
       stat:
         path: /run/ostree-booted
       register: stat_ostree
-      tags:
-        - always
+      tags: always
 
     - name: set_fact is_atomic
       set_fact:
         is_atomic: '{{ stat_ostree.stat.exists }}'
-      tags:
-        - always
+      tags: always
 
     - name: check if podman binary is present
       stat:
@@ -74,24 +70,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+      tags: with_pkg
+    - import_role:
         name: ceph-container-common
-      tags: [with_pkg, fetch_container_image]
-      when:
-        - not (is_atomic | bool)
-        - (not (inventory_hostname in groups.get('clients', [])) or (inventory_hostname == groups.get('clients', [''])|first))
-
-    # post-tasks for upcoming import -
-    - name: "pull {{ ceph_docker_image }} image"
-      command: "{{ container_binary }} pull {{ ceph_docker_registry }}/{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
-      register: container_pull
-      until: container_pull.rc == 0
-      retries: 5
-      delay: 5
-      changed_when: false
-      when:
-        - is_atomic
-        - (ceph_docker_dev_image is undefined or not ceph_docker_dev_image)
-        - (not (inventory_hostname in groups.get('clients', [])) or (inventory_hostname == groups.get('clients', [''])|first))
+      tags: fetch_container_image
+      when: not (inventory_hostname in groups.get('clients', [])) or (inventory_hostname == groups.get('clients', [''])|first)
 
 - hosts: mons
   any_errors_fatal: true
@@ -118,7 +102,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -162,10 +151,14 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
     - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
+    - import_role:
         name: ceph-config
-        private: fals
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-mgr
@@ -202,7 +195,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -241,7 +239,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -280,7 +283,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -319,7 +327,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -358,7 +371,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -397,9 +415,14 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+      when: inventory_hostname == groups.get('clients', ['']) | first or dashboard_enabled
+    - import_role:
         name: ceph-container-common
-      when:
-        - inventory_hostname == groups.get('clients', ['']) | first
+      when: inventory_hostname == groups.get('clients', ['']) | first
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -440,7 +463,12 @@
     - import_role:
         name: ceph-handler
     - import_role:
+        name: ceph-container-engine
+    - import_role:
         name: ceph-container-common
+    - import_role:
+        name: ceph-node-exporter
+      when: dashboard_enabled | bool
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -488,3 +516,81 @@
       delegate_to: "{{ groups[mon_group_name][0] }}"
       run_once: true
       when: not ceph_status.failed
+
+- hosts: '{{ groups["grafana-server"][0] | default(groups["mgrs"][0]) | default(groups["mons"][0]) | default(omit) }}'
+  become: true
+  pre_tasks:
+    - name: set ceph grafana install 'In Progress'
+      run_once: true
+      set_stats:
+        data:
+          installer_phase_ceph_grafana:
+            status: "In Progress"
+            start: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+      when: dashboard_enabled | bool
+
+  tasks:
+    - block:
+        - import_role:
+            name: ceph-defaults
+          tags: ['ceph_update_config']
+        - import_role:
+            name: ceph-facts
+          tags: ['ceph_update_config']
+        - import_role:
+            name: ceph-handler
+        - import_role:
+            name: ceph-container-engine
+        - import_role:
+            name: ceph-container-common
+        - import_role:
+            name: ceph-node-exporter
+        - import_role:
+            name: ceph-config
+          tags: ['ceph_update_config']
+        - import_role:
+            name: ceph-prometheus
+        - import_role:
+            name: ceph-grafana
+      when: dashboard_enabled | bool
+
+  post_tasks:
+    - name: set ceph grafana install 'Complete'
+      run_once: true
+      set_stats:
+        data:
+          installer_phase_ceph_grafana:
+            status: "Complete"
+            end: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+      when: dashboard_enabled | bool
+
+- hosts: '{{ groups["mgrs"][0] | default(groups["mons"][0]) | default(omit) }}'
+  become: true
+  pre_tasks:
+    - name: set ceph dashboard install 'In Progress'
+      run_once: true
+      set_stats:
+        data:
+          installer_phase_ceph_dashboard:
+            status: "In Progress"
+            start: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+      when: dashboard_enabled | bool
+
+  tasks:
+    - block:
+        - import_role:
+            name: ceph-defaults
+          tags: ['ceph_update_config']
+        - import_role:
+            name: ceph-dashboard
+      when: dashboard_enabled | bool
+
+  post_tasks:
+    - name: set ceph dashboard install 'Complete'
+      run_once: true
+      set_stats:
+        data:
+          installer_phase_ceph_dashboard:
+            status: "Complete"
+            end: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+      when: dashboard_enabled | bool

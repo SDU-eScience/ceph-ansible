@@ -12,8 +12,7 @@
     path: "{{ ceph_rhcs_iso_path | dirname }}"
     state: directory
     recurse: yes
-  when:
-    - ceph_rhcs_iso_path | dirname != '/'
+  when: ceph_rhcs_iso_path | dirname != '/'
 
 - name: fetch the red hat storage iso from the ansible server for debian systems
   copy:
@@ -52,7 +51,7 @@
 
 - name: add red hat storage repository for debian systems
   apt_repository:
-    repo: "deb file://{{ ceph_rhcs_repository_path }}/{{ item }} {{ ansible_lsb.codename }} main"
+    repo: "deb file://{{ ceph_rhcs_repository_path }}/{{ item }} {{ ansible_distribution_release }} main"
     state: present
     update_cache: yes
   with_items:
