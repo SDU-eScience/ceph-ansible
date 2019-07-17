@@ -2,6 +2,7 @@
 *.vdi
 *.keyring
 fetch/*
+fetch*tgz
 *.DS_Store
 *.pyc
 *.sw?
