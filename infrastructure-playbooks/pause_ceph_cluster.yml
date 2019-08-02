@@ -1,4 +1,6 @@
 ---
+# Author: CP
+
 - name: Pause CEPH Cluster {{ cluster }} 
   hosts: mons[0]
   gather_facts: false

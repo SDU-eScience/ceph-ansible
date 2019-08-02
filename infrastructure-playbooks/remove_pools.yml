@@ -1,4 +1,6 @@
 ---
+# Author: CP
+
 # This playbook remove ceph pools
 - name: List pools
   hosts: localhost

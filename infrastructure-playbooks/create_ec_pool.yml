@@ -1,4 +1,6 @@
 ---
+# Author: CP
+
 - name: "Check if pool {{ item.name }} already exists"
   command: "ceph --cluster {{ cluster }} osd pool get {{ item.name }} pg_num"
   changed_when: false

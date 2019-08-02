@@ -1,4 +1,7 @@
 ---
+# Author: CP
+# part of purge-cluster.tml
+
 # This playbook purges Ceph
 # It removes: packages, configuration files and ALL THE DATA
 #

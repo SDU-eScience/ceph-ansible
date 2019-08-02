@@ -243,7 +243,6 @@ ceph_pools_ec:
       - rados
 
 
-
 create_cephfs: true
 cephfs: cephfs # name of the ceph filesystem
 cephfs_data: cephfs_data # name of the data pool for a given filesystem

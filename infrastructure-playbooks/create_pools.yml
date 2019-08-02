@@ -1,4 +1,6 @@
 ---
+# Author: CP
+
 - name: Create replicated pools
   hosts: mons
   become: true

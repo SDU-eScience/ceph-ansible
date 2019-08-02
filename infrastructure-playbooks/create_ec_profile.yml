@@ -1,4 +1,6 @@
 ---
+# Author: CP
+
 - name: Check if ec profile already exists
   command: "ceph --cluster {{ cluster }} osd erasure-code-profile get {{ item.name }}"
   changed_when: false
