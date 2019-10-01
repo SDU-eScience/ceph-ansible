@@ -61,8 +61,16 @@ ceph dashboard ac-user-create user pass administrator
 ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 ceph osd pool delete testbench testbench --yes-i-really-really-mean-it
 
+## Rados Block devices
+# to create an identity
+ceph --cluster ceph auth get-or-create client.nodeAB-04 mon 'profile rbd' osd 'profile rbd pool=escience'
+# to create a block device
+rbd create --size 1048576 escience/nodeAB-04
+
+
 # to mount a rbd with the kernel driver
 rbd map test3 -p escience --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id manager1 -m 172.26.3.1:6789
+rbd map escience/nodeAB-04 --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id nodeAB-04 -m 172.26.3.1:6789
 
 # to mount a rbd with the rbd-ndb / nbd driver + librbd usersapce lib
 rbd-nbd map escience/test4 --key AQAVoa1c4iKUKhAAf4ulmQ2c2p/i/3rk2MuFBg== --id manager1 -m 172.26.3.1:6789 [--device /dev/nbd4]
