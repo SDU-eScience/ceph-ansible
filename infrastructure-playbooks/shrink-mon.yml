@@ -32,8 +32,7 @@
   vars:
     mon_group_name: mons
 
-  tasks:
-    # pre task for following import
+  pre_tasks:
     - name: exit playbook, if only one monitor is present in cluster
       fail:
         msg: "You are about to shrink the only monitor present in the cluster.
@@ -67,7 +66,7 @@
     - import_role:
         name: ceph-facts
 
-    # post_tasks for preceding import
+  tasks:
     - name: pick a monitor different than the one we want to remove
       set_fact:
         mon_host: "{{ item }}"
@@ -110,17 +109,13 @@
       failed_when: false
       delegate_to: "{{ mon_host }}"
 
-    # NOTE (leseb): sorry for the 'sleep' command
-    # but it will take a couple of seconds for other monitors
-    # to notice that one member has left.
-    # 'sleep 5' is not that bad and should be sufficient
+  post_tasks:
     - name: verify the monitor is out of the cluster
-      shell: |
-        {{ container_exec_cmd }} ceph --cluster {{ cluster }} -s -f json | python -c 'import sys, json; print(json.load(sys.stdin)["quorum_names"])'
+      command: "{{ container_exec_cmd }} ceph --cluster {{ cluster }} -s -f json"
       delegate_to: "{{ mon_host }}"
       failed_when: false
       register: result
-      until: mon_to_kill_hostname not in result.stdout
+      until: mon_to_kill_hostname not in (result.stdout | from_json)['quorum_names']
       retries: 2
       delay: 10
 
@@ -129,13 +124,13 @@
           msg: "The monitor has been successfully removed from the cluster.
           Please remove the monitor entry from the rest of your ceph configuration files, cluster wide."
       run_once: true
-      when: mon_to_kill_hostname not in result.stdout
+      when: mon_to_kill_hostname not in (result.stdout | from_json)['quorum_names']
 
     - name: fail if monitor is still part of the cluster
       fail:
           msg: "Monitor appears to still be part of the cluster, please check what happened."
       run_once: true
-      when: mon_to_kill_hostname in result.stdout
+      when: mon_to_kill_hostname in (result.stdout | from_json)['quorum_names']
 
     - name: show ceph health
       command: "{{ container_exec_cmd }} ceph --cluster {{ cluster }} -s"
