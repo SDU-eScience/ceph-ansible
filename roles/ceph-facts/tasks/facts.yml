@@ -84,7 +84,7 @@
   when: cephx | bool or generate_fsid | bool
 
 - name: get current fsid
-  command: "{{ timeout_command }} {{ container_exec_cmd }} ceph --cluster {{ cluster }} daemon mon.{{ hostvars[mon_host | default(groups[mon_group_name][0])]['ansible_hostname'] }} config get fsid"
+  command: "{{ timeout_command }} {{ container_exec_cmd }} ceph --admin-daemon /var/run/ceph/{{ cluster }}-mon.{{ hostvars[mon_host | default(groups[mon_group_name][0])]['ansible_hostname'] }}.asok config get fsid"
   register: rolling_update_fsid
   delegate_to: "{{ mon_host | default(groups[mon_group_name][0]) }}"
   until: rolling_update_fsid is succeeded
@@ -218,15 +218,11 @@
     ceph_uid: 167
   when:
     - containerized_deployment | bool
-    - (ceph_docker_image_tag | string is search("latest") or ceph_docker_image_tag | string is search("centos") or ceph_docker_image_tag | string is search("fedora")
+    - (ceph_docker_image_tag | string is search("latest")
+      or ceph_docker_image_tag | string is search("centos")
+      or ceph_docker_image_tag | string is search("fedora")
+      or ceph_docker_image_tag | string is search("rhceph")
       or (ansible_distribution == 'RedHat'))
-
-- name: set_fact ceph_uid for red hat
-  set_fact:
-    ceph_uid: 167
-  when:
-    - containerized_deployment | bool
-    - ceph_docker_image is search("rhceph")
 
 - name: set_fact rgw_hostname
   set_fact:
@@ -331,7 +327,7 @@
 
 - name: set grafana_server_addr fact - ipv4 - (external instance)
   set_fact:
-    grafana_server_addr: "{{ hostvars[groups.get(grafana_server_group_name, []) | first]['ansible_all_ipv4_addresses'] | ipaddr(public_network) | first }}"
+    grafana_server_addr: "{{ hostvars[groups.get(grafana_server_group_name, []) | first]['ansible_all_ipv4_addresses'] | ips_in_ranges(public_network.split(',')) | first }}"
   when:
     - groups.get(grafana_server_group_name, []) | length > 0
     - ip_version == 'ipv4'
@@ -340,7 +336,7 @@
 
 - name: set grafana_server_addr fact - ipv6 - (external instance)
   set_fact:
-    grafana_server_addr: "{{ hostvars[groups.get(grafana_server_group_name, []) | first]['ansible_all_ipv6_addresses'] | ipaddr(public_network) | last | ipwrap }}"
+    grafana_server_addr: "{{ hostvars[groups.get(grafana_server_group_name, []) | first]['ansible_all_ipv6_addresses'] | ips_in_ranges(public_network.split(',')) | last | ipwrap }}"
   when:
     - groups.get(grafana_server_group_name, []) | length > 0
     - ip_version == 'ipv6'

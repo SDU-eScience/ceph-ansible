@@ -28,13 +28,14 @@
     # pre-tasks for following import -
     - name: gather facts
       setup:
-      when: not delegate_facts_host | bool
+      when:
+        - not delegate_facts_host | bool or inventory_hostname in groups.get(client_group_name, [])
 
     - name: gather and delegate facts
       setup:
       delegate_to: "{{ item }}"
       delegate_facts: True
-      with_items: "{{ groups['all'] }}"
+      with_items: "{{ groups['all'] | difference(groups.get('clients', [])) }}"
       run_once: true
       when: delegate_facts_host | bool
 
@@ -101,6 +102,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -147,6 +149,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -188,6 +191,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -229,6 +233,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -270,6 +275,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -311,6 +317,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -352,6 +359,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:
@@ -393,6 +401,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
       when: inventory_hostname == groups.get('clients', ['']) | first
@@ -438,6 +447,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-container-engine
     - import_role:

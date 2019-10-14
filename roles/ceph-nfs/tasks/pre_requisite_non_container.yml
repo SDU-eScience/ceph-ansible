@@ -47,12 +47,13 @@
     - groups.get(mon_group_name, []) | length > 0
   block:
     - name: get keys from monitors
-      command: "{{ container_exec_cmd }} ceph --cluster {{ cluster }} auth get {{ item.name }}"
+      command: "ceph --cluster {{ cluster }} auth get {{ item.name }}"
       register: _rgw_keys
       with_items:
         - { name: "client.bootstrap-rgw", path: "/var/lib/ceph/bootstrap-rgw/{{ cluster }}.keyring", copy_key: true }
         - { name: "client.admin", path: "/etc/ceph/{{ cluster }}.client.admin.keyring", copy_key: "{{ copy_admin_key }}" }
       delegate_to: "{{ groups.get(mon_group_name)[0] }}"
+      run_once: true
       when:
         - cephx | bool
         - item.copy_key | bool
@@ -91,10 +92,3 @@
     owner: "root"
     group: "root"
     mode: "0755"
-
-- name: stop nfs server service
-  systemd:
-    name: "{%- if ansible_os_family == 'RedHat' 'nfs-server' %}{%- endif %}{%- if ansible_os_family == 'Suse' 'nfsserver' %}{%- endif %}{%- if ansible_os_family == 'Debian' 'nfs-kernel-server' %}{%- endif %}"
-    state: stopped
-    enabled: no
-  ignore_errors: true

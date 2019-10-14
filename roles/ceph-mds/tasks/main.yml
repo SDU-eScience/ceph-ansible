@@ -6,11 +6,6 @@
     - not rolling_update | bool
     - create_cephfs | default(False)
 
-- name: set_fact container_exec_cmd
-  set_fact:
-    container_exec_cmd: "{{ container_binary }} exec ceph-mds-{{ ansible_hostname }}"
-  when: containerized_deployment | bool
-
 - name: include common.yml
   include_tasks: common.yml
 
