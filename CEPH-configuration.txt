@@ -46,6 +46,10 @@ ceph osd unset norecover
 ceph osd unset nobackfill
 ceph osd unset noout
 
+# to stop scrubbing
+ceph osd set noscrub
+ceph osd set nodeep-scrub
+
 
 # dashboard
 yum install ceph-mgr-dashboard
