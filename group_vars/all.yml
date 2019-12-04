@@ -188,7 +188,7 @@ osd_pool_default_pg_num: 128
 ceph_remove_pools:
   # - "kube"
   # - "escience"
-  - "cephfs_data"
+  # - "cephfs_data"
   # - "cephfs_metadata"
 
 
