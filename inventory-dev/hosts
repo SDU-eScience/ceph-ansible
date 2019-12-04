@@ -1,0 +1,16 @@
+[mons]
+dev-ceph-mon-01 monitor_address=10.135.0.15
+dev-ceph-mon-02 monitor_address=10.135.0.16
+dev-ceph-mon-03 monitor_address=10.135.0.17
+
+[mdss]
+dev-ceph-mon-[01:03]
+
+[mgrs]
+dev-ceph-mon-[01:03]
+
+[osds]
+dev-ceph-osd-[01:02]
+
+#[clients]
+#nodeAA-01

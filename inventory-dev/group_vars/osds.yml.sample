@@ -15,7 +15,7 @@ dummy:
 # at their disposal, some people might want to have it
 # distributed on OSD nodes. Setting 'copy_admin_key' to 'true'
 # will copy the admin key to the /etc/ceph/ directory
-copy_admin_key: false
+#copy_admin_key: false
 
 
 ##############
@@ -31,59 +31,71 @@ copy_admin_key: false
 
 # Declare devices to be used as OSDs
 # All scenario(except 3rd) inherit from the following device declaration
-# Note: This scenario uses the ceph-disk tool to provision OSDs
+# Note: This scenario uses the ceph-volume lvm batch method to provision OSDs
 
-# sd[bcd] 3x SSD 100GB
-# sd[e-p] 12x HDD 4TB
-devices:
- - /dev/sdb
- - /dev/sdc
- - /dev/sdd
- - /dev/sde
- - /dev/sdf
- - /dev/sdg
- - /dev/sdh
- - /dev/sdi 
- - /dev/sdj
- - /dev/sdk
- - /dev/sdl
- - /dev/sdm
- - /dev/sdn
- - /dev/sdo
- - /dev/sdp
+#devices:
+#  - /dev/sdb
+#  - /dev/sdc
+#  - /dev/sdd
+#  - /dev/sde
 
+#devices: []
 
+# Declare devices to be used as block.db devices
 
+#dedicated_devices:
+#  - /dev/sdx
+#  - /dev/sdy
 
+#dedicated_devices: []
 
+# Declare devices to be used as block.wal devices
+
+#bluestore_wal_devices:
+#  - /dev/nvme0n1
+#  - /dev/nvme0n2
+
+#bluestore_wal_devices: []
 
 #'osd_auto_discovery'  mode prevents you from filling out the 'devices' variable above.
 # Device discovery is based on the Ansible fact 'ansible_devices'
-# which reports all the devices on a system. If chosen all the disks
-# found will be passed to ceph-disk. You should not be worried on using
-# this option since ceph-disk has a built-in check which looks for empty devices.
+# which reports all the devices on a system. If chosen, all the disks
+# found will be passed to ceph-volume lvm batch. You should not be worried on using
+# this option since ceph-volume has a built-in check which looks for empty devices.
 # Thus devices with existing partition tables will not be used.
 #
-osd_auto_discovery: false
+#osd_auto_discovery: false
 
 # Encrypt your OSD device using dmcrypt
-# If set to True, no matter which osd_objecstore and osd_scenario you use the data will be encrypted
-dmcrypt: False
+# If set to True, no matter which osd_objecstore you use the data will be encrypted
+#dmcrypt: False
 
-osd_scenario: lvm
-#valid_osd_scenarios:
-#  - collocated
-#  - non-collocated
-#  - lvm
-osd_objectstore: bluestore
-# we use the simple configuration. This will run:
-# ceph-volume lvm batch 
-# and only requires "devices" to be populated
-
-# III. Use ceph-volume to create OSDs from logical volumes.
-# Use 'osd_scenario: lvm' to enable this scenario.
-# when using lvm, not collocated journals.
+# Use ceph-volume to create OSDs from logical volumes.
 # lvm_volumes is a list of dictionaries.
+#
+# Filestore: Each dictionary must contain a data, journal and vg_name key. Any
+# logical volume or logical group used must be a name and not a path.  data
+# can be a logical volume, device or partition. journal can be either a lv or partition.
+# You can not use the same journal for many data lvs.
+# data_vg must be the volume group name of the data lv, only applicable when data is an lv.
+# journal_vg is optional and must be the volume group name of the journal lv, if applicable.
+# For example:
+# lvm_volumes:
+#   - data: data-lv1
+#     data_vg: vg1
+#     journal: journal-lv1
+#     journal_vg: vg2
+#     crush_device_class: foo
+#   - data: data-lv2
+#     journal: /dev/sda1
+#     data_vg: vg1
+#   - data: data-lv3
+#     journal: /dev/sdb1
+#     data_vg: vg2
+#   - data: /dev/sda
+#     journal: /dev/sdb1
+#   - data: /dev/sda1
+#     journal: /dev/sdb1
 #
 # Bluestore: Each dictionary must contain at least data. When defining wal or
 # db, it must have both the lv name and vg group (db and wal are not required).
@@ -111,7 +123,7 @@ osd_objectstore: bluestore
 
 #lvm_volumes: []
 #crush_device_class: ""
-osds_per_device: 1
+#osds_per_device: 1
 
 
 ##########
@@ -125,7 +137,7 @@ osds_per_device: 1
 # Default values are based from: https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/2/html/red_hat_ceph_storage_hardware_guide/minimum_recommendations
 # These options can be passed using the 'ceph_osd_docker_extra_env' variable.
 #ceph_osd_docker_memory_limit: "{{ ansible_memtotal_mb }}m"
-#ceph_osd_docker_cpu_limit: 1
+#ceph_osd_docker_cpu_limit: 4
 
 # The next two variables are undefined, and thus, unused by default.
 # If `lscpu | grep NUMA` returned the following:
@@ -166,3 +178,4 @@ osds_per_device: 1
 
 #nb_retry_wait_osd_up: 60
 #delay_wait_osd_up: 10
+
