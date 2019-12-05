@@ -9,8 +9,7 @@
   any_errors_fatal: true
   become: true
 
-  tags:
-    - always
+  tags: always
 
   vars:
     delegate_facts_host: True
@@ -24,37 +23,15 @@
     - name: gather facts
       setup:
       when:
-        - not delegate_facts_host | bool
+        - not delegate_facts_host | bool or inventory_hostname in groups.get(client_group_name, [])
 
     - name: gather and delegate facts
       setup:
       delegate_to: "{{ item }}"
       delegate_facts: True
-      loop: "{{ groups['all'] }}"
+      with_items: "{{ groups['all'] | difference(groups.get('clients', [])) }}"
       run_once: true
-      when:
-        - delegate_facts_host | bool
-
-    - name: install required packages for fedora > 23
-      raw: sudo dnf -y install python2-dnf libselinux-python ntp
-      register: result
-      when:
-        - ansible_distribution == 'Fedora'
-        - ansible_distribution_major_version|int >= 23
-      until: result is succeeded
-
-    - name: check if it is atomic host
-      stat:
-        path: /run/ostree-booted
-      register: stat_ostree
-      tags:
-        - always
-
-    - name: set_fact is_atomic
-      set_fact:
-        is_atomic: '{{ stat_ostree.stat.exists }}'
-      tags:
-        - always
+      when: delegate_facts_host | bool
 
   tasks:
     - import_role:
@@ -65,7 +42,8 @@
         name: ceph-validate
     - import_role:
         name: ceph-infra
-
+    - import_role:
+        name: ceph-common
 
 - hosts: mdss
   gather_facts: false
@@ -89,8 +67,7 @@
       tags: ['ceph_update_config']
     - import_role:
         name: ceph-handler
-    - import_role:
-        name: ceph-common
+      tags: ['ceph_update_config']
     - import_role:
         name: ceph-config
       tags: ['ceph_update_config']
@@ -105,4 +82,3 @@
           installer_phase_ceph_mds:
             status: "Complete"
             end: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
-

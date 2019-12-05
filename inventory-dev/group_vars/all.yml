@@ -66,7 +66,7 @@ configure_firewall: false
 
 centos_package_dependencies:
   - python-pycurl
-#  - epel-release # we don't need external repos
+  - epel-release # we need this on dev system
   - python-setuptools
   - libselinux-python
   - smartmontools
@@ -192,6 +192,10 @@ ceph_remove_pools:
   # - "cephfs_metadata"
 
 
+ceph_replicated_profiles:
+  - name: replicated_rule
+    root: default
+    crush_failure_domain: osd
 
 ceph_pools_replicated:
   # - name: test_def
@@ -199,21 +203,21 @@ ceph_pools_replicated:
   #   size: "{{ osd_pool_default_size }}"
   #   min_size: "{{ osd_pool_default_min_size }}"
   - name: cephfs_metadata
-    pgs: 512
+    pgs: 128
     size: 4
     min_size: 2
-    target_size_ratio: 0.05
+    target_size_ratio: 0.10
     applications:
       - cephfs
   - name: kube
-    pgs: 512
+    pgs: 128
     size: 4
     min_size: 2
     target_size_ratio: 0.10
     applications:
       - rbd
   - name: escience
-    pgs: 512
+    pgs: 128
     size: 4
     min_size: 2
     target_size_ratio: 0.10
@@ -221,26 +225,32 @@ ceph_pools_replicated:
       - rbd
 
 ceph_ec_profiles:
-  - name: ec_83h
+  # - name: ec_83h
+  #   k: 8
+  #   m: 3
+  #   plugin: jerasure
+  #   technique: reed_sol_van
+  #   crush_failure_domain: host
+  - name: ec_83o
     k: 8
     m: 3
     plugin: jerasure
     technique: reed_sol_van
-    crush_failure_domain: host
+    crush_failure_domain: osd
 
 ceph_pools_ec:
   - name: cephfs_data
-    pgs: 1024
-    ec_profile: ec_83h
+    pgs: 256
+    ec_profile: ec_83o
     target_size_ratio: 0.4
     applications:
       - cephfs
-  - name: test_ec
-    pgs: 512
-    ec_profile: ec_83h
-    target_size_ratio: 0.2
-    applications:
-      - rados
+  # - name: test_ec
+  #   pgs: 512
+  #   ec_profile: ec_83h
+  #   target_size_ratio: 0.2
+  #   applications:
+  #     - rados
 
 
 create_cephfs: true

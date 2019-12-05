@@ -33,27 +33,32 @@ copy_admin_key: false
 # All scenario(except 3rd) inherit from the following device declaration
 # Note: This scenario uses the ceph-disk tool to provision OSDs
 
-# sd[bcd] 3x SSD 100GB
-# sd[e-p] 12x HDD 4TB
+#devices:
+#  - /dev/sdb
+#  - /dev/sdc
+#  - /dev/sdd
+#  - /dev/sde
+
 devices:
- - /dev/sdb
- - /dev/sdc
- - /dev/sdd
- - /dev/sde
- - /dev/sdf
- - /dev/sdg
- - /dev/sdh
- - /dev/sdi 
- - /dev/sdj
- - /dev/sdk
- - /dev/sdl
- - /dev/sdm
- - /dev/sdn
- - /dev/sdo
- - /dev/sdp
-
-
-
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy0-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy1-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy2-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy3-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy4-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy5-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy6-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy7-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy8-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy9-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy10-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy11-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy12-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy13-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy14-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy15-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy16-lun-0"
+  - "/dev/disk/by-path/pci-0000:3c:00.0-sas-exp0x{{ HDDid }}-phy17-lun-0"
+  - /dev/disk/by-path/pci-0000:5e:00.0-nvme-1  
 
 
 

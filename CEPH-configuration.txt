@@ -58,6 +58,8 @@ ceph dashboard create-self-signed-cert
 firewall-cmd --permanent --add-port=8443/tcp
 ceph dashboard ac-user-create user pass administrator
 
+ceph config set mgr mgr/dashboard/$name/server_addr $IP
+ceph config set mgr mgr/dashboard/$name/server_port $PORT
 
 
 # notes
