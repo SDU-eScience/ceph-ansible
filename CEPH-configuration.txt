@@ -16,6 +16,12 @@ ceph tell 'osd.*' config set osd_max_backfills 8
 # default 3
 ceph tell 'osd.*' config set osd_recovery_max_active 4
 
+# MDS 
+#increase cache (e.g. 16GB)
+ceph daemon mds.ceph-mon-03 config set mds_cache_memory_limit 17179869184
+# to see chace size
+ceph daemon mds.ceph-mon-03 config get mds_cache_memory_limit
+
 # ceph k8s
 ceph --cluster ceph auth get-or-create client.kube mon 'allow r' osd 'allow rwx pool=kube'
 
@@ -60,6 +66,10 @@ ceph dashboard ac-user-create user pass administrator
 
 ceph config set mgr mgr/dashboard/$name/server_addr $IP
 ceph config set mgr mgr/dashboard/$name/server_port $PORT
+E.g.
+ceph config set mgr mgr/dashboard/dev-ceph-mon-01/server_addr 10.135.0.15
+ceph config set mgr mgr/dashboard/dev-ceph-mon-02/server_addr 10.135.0.16
+ceph config set mgr mgr/dashboard/dev-ceph-mon-03/server_addr 10.135.0.17
 
 
 # notes
