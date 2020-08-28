@@ -1,4 +1,7 @@
 ---
+- name: include check_system.yml
+  include_tasks: check_system.yml
+
 - name: validate repository variables in non-containerized scenario
   when: not containerized_deployment | bool
   block:
@@ -40,7 +43,7 @@
     msg: "Either monitor_address, monitor_address_block or monitor_interface must be provided"
   when:
     - mon_group_name in group_names
-    - monitor_address == '0.0.0.0'
+    - monitor_address == 'x.x.x.x'
     - monitor_address_block == 'subnet'
     - monitor_interface == 'interface'
 
@@ -49,7 +52,7 @@
     msg: "Either radosgw_address, radosgw_address_block or radosgw_interface must be provided"
   when:
     - rgw_group_name in group_names
-    - radosgw_address == '0.0.0.0'
+    - radosgw_address == 'x.x.x.x'
     - radosgw_address_block == 'subnet'
     - radosgw_interface == 'interface'
 
@@ -100,15 +103,13 @@
       fail:
         msg: "'local' installation scenario not supported on Debian systems"
       when: ceph_origin == 'local'
-    - name: verify that ceph_rhcs_cdn_debian_repo url is valid for red hat storage
+
+    - name: fail if rhcs repository is enabled on debian
       fail:
-        msg: "ceph_rhcs_cdn_debian_repo url is invalid, please set your customername:customerpasswd"
+        msg: "RHCS isn't supported anymore on Debian distribution"
       when:
         - ceph_origin == 'repository'
         - ceph_repository == 'rhcs'
-        - ceph_repository_type == 'cdn'
-        - ceph_rhcs_cdn_debian_repo == 'https://customername:customerpasswd@rhcs.download.redhat.com'
-        - ceph_repository not in ['rhcs', 'dev', 'obs']
 
 - name: validate ntp daemon type
   fail:
@@ -134,9 +135,6 @@
     - osd_objectstore == 'filestore'
     - osd_group_name in group_names
 
-- name: include check_system.yml
-  include_tasks: check_system.yml
-
 - name: include check_devices.yml
   include_tasks: check_devices.yml
   when:
@@ -149,7 +147,7 @@
   when:
     - mon_group_name in group_names
     - monitor_interface != "dummy"
-    - monitor_address == "0.0.0.0"
+    - monitor_address == "x.x.x.x"
     - monitor_address_block == "subnet"
 
 - name: include check_ipaddr_mon.yml
@@ -157,7 +155,7 @@
   when:
     - mon_group_name in group_names
     - monitor_interface == "interface"
-    - monitor_address == "0.0.0.0"
+    - monitor_address == "x.x.x.x"
     - monitor_address_block != "subnet"
 
 - name: include check_eth_rgw.yml
@@ -165,8 +163,14 @@
   when:
     - rgw_group_name in group_names
     - radosgw_interface != "dummy"
-    - radosgw_address == "0.0.0.0"
+    - radosgw_address == "x.x.x.x"
     - radosgw_address_block == "subnet"
+
+- name: include check_rgw_pools.yml
+  include_tasks: check_rgw_pools.yml
+  when:
+    - inventory_hostname in groups.get(rgw_group_name, [])
+    - rgw_create_pools is defined
 
 - name: include check_rgw_multisite.yml
   include_tasks: check_rgw_multisite.yml
@@ -189,6 +193,12 @@
   include_tasks: check_nfs.yml
   when: inventory_hostname in groups.get(nfs_group_name, [])
 
+- name: include check_rbdmirror.yml
+  include_tasks: check_rbdmirror.yml
+  when:
+    - rbdmirror_group_name in group_names
+    - ceph_rbd_mirror_configure | default(false) | bool
+
 - block:
     - name: fail if [grafana-server] group doesn't exist
       fail:
@@ -199,6 +209,13 @@
       fail:
         msg: "you must add at least one node in the [grafana-server] hosts group"
       when: groups[grafana_server_group_name] | length < 1
+
+    - name: fail when dashboard_admin_password and/or grafana_admin_password are not set
+      fail:
+        msg: "you must set dashboard_admin_password and grafana_admin_password."
+      when:
+        - dashboard_admin_password is undefined
+          or grafana_admin_password is undefined
   when: dashboard_enabled | bool
 
 - name: validate container registry credentials

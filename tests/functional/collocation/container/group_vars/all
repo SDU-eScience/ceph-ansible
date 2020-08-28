@@ -19,3 +19,6 @@ ceph_conf_overrides:
     osd_pool_default_size: 1
 handler_health_mon_check_delay: 10
 handler_health_osd_check_delay: 10
+dashboard_admin_password: $sX!cD$rYU6qR^B!
+dashboard_admin_user_ro: true
+grafana_admin_password: +xFRe+RES@7vg24n

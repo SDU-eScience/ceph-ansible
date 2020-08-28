@@ -9,6 +9,7 @@ mgr0
 [osds]
 osd0 osd_crush_location="{ 'root': 'HDD', 'rack': 'mon-rackkkk', 'pod': 'monpod', 'host': 'osd0' }"
 osd1 osd_crush_location="{ 'root': 'default', 'host': 'osd1' }"
+osd2 osd_crush_location="{ 'root': 'default', 'host': 'osd2' }"
 
 [mdss]
 mds0
@@ -29,7 +30,7 @@ nfs0
 rbd-mirror0
 
 [iscsigws]
-iscsi-gw0 ceph_repository="dev"
+iscsi-gw0
 
 [grafana-server]
 mon0

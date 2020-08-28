@@ -12,12 +12,11 @@ openstack_glance_pool:
   name: "images"
   pg_num: "{{ osd_pool_default_pg_num }}"
   pgp_num: "{{ osd_pool_default_pg_num }}"
-  rule_name: "HDD"
   type: 1
-  erasure_profile: ""
-  expected_num_objects: ""
   size: 1
   application: rbd
+  pg_autoscale_mode: True
+  target_size_ratio: 0.2
 openstack_cinder_pool:
   name: "volumes"
   pg_num: "{{ osd_pool_default_pg_num }}"
@@ -33,4 +32,6 @@ openstack_pools:
   - "{{ openstack_cinder_pool }}"
 handler_health_mon_check_delay: 10
 handler_health_osd_check_delay: 10
-mds_max_mds: 3
+mds_max_mds: 2
+dashboard_admin_password: $sX!cD$rYU6qR^B!
+grafana_admin_password: +xFRe+RES@7vg24n
