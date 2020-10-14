@@ -216,6 +216,13 @@
     - import_role:
         name: ceph-mon
 
+    - name: unmask the mgr service
+      systemd:
+        name: ceph-mgr@{{ ansible_hostname }}
+        masked: no
+      when: inventory_hostname in groups[mgr_group_name] | default([])
+            or groups[mgr_group_name] | default([]) | length == 0
+
     - name: start ceph mgr
       systemd:
         name: ceph-mgr@{{ ansible_hostname }}
@@ -223,6 +230,14 @@
         enabled: yes
       when: inventory_hostname in groups[mgr_group_name] | default([])
             or groups[mgr_group_name] | default([]) | length == 0
+
+    - name: mask the mgr service
+      systemd:
+        name: ceph-mgr@{{ ansible_hostname }}
+        masked: yes
+      when: inventory_hostname in groups[mgr_group_name] | default([])
+            or groups[mgr_group_name] | default([]) | length == 0
+
 
     - name: non container | waiting for the monitor to join the quorum...
       command: ceph --cluster "{{ cluster }}" -m "{{ hostvars[groups[mon_group_name][0]]['_current_monitor_address'] }}" -s --format json
