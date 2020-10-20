@@ -12,5 +12,8 @@ ceph-mon-[01:03]
 [osds]
 ceph-osd-[01:14]
 
+[grafana-server]
+ceph-mon-01
+
 [clients]
 #nodeAA-01

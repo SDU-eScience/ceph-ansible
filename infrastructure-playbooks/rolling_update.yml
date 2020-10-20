@@ -413,6 +413,11 @@
     - import_role:
         name: ceph-osd
 
+#    - name: patching file for ceph-volume
+#      copy:
+#        src: /Users/hansen/Downloads/scan.py
+#        dest: /usr/lib/python3.6/site-packages/ceph_volume/devices/simple/scan.py
+
     - name: scan ceph-disk osds with ceph-volume if deploying nautilus
       command: "ceph-volume --cluster={{ cluster }} simple scan --force"
       environment:

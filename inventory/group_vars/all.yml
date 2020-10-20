@@ -68,10 +68,11 @@ configure_firewall: false
 
 centos_package_dependencies:
   - python-pycurl
-#  - epel-release # we don't need external repos
   - python-setuptools
   - libselinux-python
   - smartmontools
+  - python36-yaml
+  - python36-six
 
 #redhat_package_dependencies:
 #  - python-pycurl
