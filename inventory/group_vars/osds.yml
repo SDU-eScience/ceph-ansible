@@ -73,7 +73,8 @@ osd_auto_discovery: false
 
 # Encrypt your OSD device using dmcrypt
 # If set to True, no matter which osd_objecstore and osd_scenario you use the data will be encrypted
-dmcrypt: False
+# We define this in the host vars
+#dmcrypt: False
 
 osd_scenario: lvm
 #valid_osd_scenarios:

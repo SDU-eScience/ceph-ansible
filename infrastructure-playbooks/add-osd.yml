@@ -131,6 +131,11 @@
     - import_role:
         name: ceph-osd
 
+    # - name: patching file for ceph-volume
+    #   copy:
+    #     src: /home/hansen/escience/scan.py
+    #     dest: /usr/lib/python3.6/site-packages/ceph_volume/devices/simple/scan.py
+
   post_tasks:
     - name: unset noup flag
       command: "{{ container_exec_cmd | default('') }} ceph --cluster {{ cluster }} osd unset noup"

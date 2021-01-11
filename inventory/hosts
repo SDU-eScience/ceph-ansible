@@ -10,7 +10,7 @@ ceph-mon-[01:03]
 ceph-mon-[01:03]
 
 [osds]
-ceph-osd-[01:14]
+ceph-osd-[01:16]
 
 [grafana-server]
 ceph-mon-01

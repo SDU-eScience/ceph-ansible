@@ -1,3 +1,4 @@
 ---
 #ceph-osd-04
 HDDid: "500056b3c05fdeff"
+dmcrypt: false
